@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Process Scheduling Simulator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+  <div class="container">
+
+  </div>
+  <div class="head"><h1>Process Scheduling Simulator</h1></div>
+  <div class="underline"></div>
+  <div class="card">
+    <div class="card-container">
+      <div class="table-container">
+        <div style="display: flex; align-items: center;">
+          <img src="./star_9796456.png" alt="icon"
+            style="width: 35px; height: 35px; margin-left: 30px;margin-right: 20px; ">
+          <h2>Process information</h2>
+        </div>
+        <table id="processTable">
+          <thead>
+            <tr>
+              <th>Process ID</th>
+              <th>Arrival Time</th>
+              <th>Burst Time</th>
+              <th>Priority</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr>
+              <td>
+                <input type="text" id="processId" placeholder="Process ID" />
+              </td>
+              <td>
+                <input type="number" id="arrivalTime" placeholder="Arrival Time" />
+              </td>
+              <td>
+                <input type="number" id="burstTime" placeholder="Burst Time" />
+              </td>
+              <td>
+                <input type="number" id="priority" placeholder="Priority" />
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    
+
+    <div class="btn-container">
+      <button class="btn btn-add" onclick="addProcess()">Add Process</button>
+      <button class="btn btn-random" onclick="generateSingleProcess()">Random Process</button>
+      <div class="delete-container">
+        <select id="processToDelete"
+          style="border-radius: 100px; width: 300px; height: 40px; padding-left: 20px; background: linear-gradient(to right, #6930d9, #3aa0e9);background-color: rgb(38, 57, 85);">
+          <option value="">Select process to delete or edit</option>
+        </select>
+
+        <button class="btn btn-delete" onclick="deleteProcess()">Delete Process</button>
+      </div>
+      <button class="btn btn-edit" onclick="editProcess()">Edit Process</button>
+      <button class="btn btn-reset" onclick="reset()">Reset</button>
+      <button class="btn btn-run" onclick="runSimulation()">Run</button>
+    </div>
+
+    <div id="editPopup" class="popup" style="display: none;">
+      <div class="popup-content">
+        <span class="close" onclick="closeEditPopup()">&times;</span>
+        <h3>Edit Process</h3>
+        <label for="editArrivalTime">Arrival Time:</label>
+        <input type="number" id="editArrivalTime" placeholder="Arrival Time" />
+        <label for="editBurstTime">Burst Time:</label>
+        <input type="number" id="editBurstTime" placeholder="Burst Time" />
+        <label for="editPriority">Priority:</label>
+        <input type="number" id="editPriority" placeholder="Priority" />
+        <button class="btn btn-save" onclick="saveEditProcess()">Save Changes</button>
+      </div>
+    </div>
+    </div>
+
+    <div class="card-container">
+    <div class="results">
+      <div style="display: flex; align-items: center;">
+        <img src="./search_4240075.png" style="width: 35px; height: 35px; margin-left: 30px; margin-right: 20px;">
+        <h2>Simulation Results</h2>
+      </div>
+      <!-- FCFS Algorithm Results -->
+      <div class="algorithm-container">
+        <div class="algorithm-header">FCFS (First Come First Serve)</div>
+        <div class="gantt-chart" id="fcfsGantt"></div>
+        <div class="table-container">
+          <table id="fcfsResultsTable">
+            <thead>
+              <tr>
+                <th>Process ID</th>
+                <th>Arrival Time</th>
+                <th>Burst Time</th>
+                <th>Priority</th>
+                <th>Completion Time</th>
+                <th>Waiting Time</th>
+                <th>Turnaround Time</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="average-times" id="fcfsAverageTimes"></div>
+      </div>
+
+      <!-- RR Algorithm Results -->
+      <div class="algorithm-container">
+        <div class="algorithm-header">RR (Round Robin)</div>
+        <div class="gantt-chart" id="rrGantt"></div>
+        <div class="table-container">
+          <table id="rrResultsTable">
+            <thead>
+              <tr>
+                <th>Process ID</th>
+                <th>Arrival Time</th>
+                <th>Burst Time</th>
+                <th>Priority</th>
+                <th>Completion Time</th>
+                <th>Waiting Time</th>
+                <th>Turnaround Time</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="average-times" id="rrAverageTimes"></div>
+      </div>
+
+      <!-- SJF Algorithm Results-->
+      <div class="algorithm-container">
+        <div class="algorithm-header">SJF (Shortest Job First)</div>
+        <div class="gantt-chart" id="sjfGantt"></div>
+        <div class="table-container">
+          <table id="sjfResultsTable">
+            <thead>
+              <tr>
+                <th>Process ID</th>
+                <th>Arrival Time</th>
+                <th>Burst Time</th>
+                <th>Priority</th>
+                <th>Completion Time</th>
+                <th>Waiting Time</th>
+                <th>Turnaround Time</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="average-times" id="sjfAverageTimes"></div>
+      </div>
+    </div>
+
+    <!-- SRTF Algorithm Results -->
+    <div class="algorithm-container">
+      <div class="algorithm-header">SRTF (Shortest Remaining Time First)</div>
+      <div class="gantt-chart" id="srtfGantt"></div>
+      <div class="table-container">
+        <table id="srtfResultsTable">
+          <thead>
+            <tr>
+              <th>Process ID</th>
+              <th>Arrival Time</th>
+              <th>Burst Time</th>
+              <th>Priority</th>
+              <th>Completion Time</th>
+              <th>Waiting Time</th>
+              <th>Turnaround Time</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="average-times" id="srtfAverageTimes"></div>
+    </div>
+
+    <!-- Priority Scheduling Algorithm Results -->
+    <div class="algorithm-container">
+      <div class="algorithm-header">Priority Scheduling</div>
+      <div class="gantt-chart" id="priorityGantt"></div>
+      <div class="table-container">
+        <table id="priorityResultsTable">
+          <thead>
+            <tr>
+              <th>Process ID</th>
+              <th>Arrival Time</th>
+              <th>Burst Time</th>
+              <th>Priority</th>
+              <th>Completion Time</th>
+              <th>Waiting Time</th>
+              <th>Turnaround Time</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="average-times" id="priorityAverageTimes"></div>
+    </div>
+
+    <!-- HRRN Scheduling Algorithm Results -->
+    <div class="algorithm-container">
+      <div class="algorithm-header">HRRN (Highest Response Ratio Next)</div>
+      <div class="gantt-chart" id="hrrnGantt"></div>
+      <div class="table-container">
+        <table id="hrrnResultsTable">
+          <thead>
+            <tr>
+              <th>Process ID</th>
+              <th>Arrival Time</th>
+              <th>Burst Time</th>
+              <th>Priority</th>
+              <th>Completion Time</th>
+              <th>Waiting Time</th>
+              <th>Turnaround Time</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="average-times" id="hrrnAverageTimes"></div>
+    </div>
+
+    <!-- MLQF Scheduling Algorithm Results -->
+    <div class="algorithm-container">
+      <div class="algorithm-header">
+        MLQF (Multi-Level Queue with Feedback)
+      </div>
+      <div class="gantt-chart" id="mlqfGantt"></div>
+      <div class="table-container">
+        <table id="mlqfResultsTable">
+          <thead>
+            <tr>
+              <th>Process ID</th>
+              <th>Arrival Time</th>
+              <th>Burst Time</th>
+              <th>Priority</th>
+              <th>Completion Time</th>
+              <th>Waiting Time</th>
+              <th>Turnaround Time</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="average-times" id="mlqfAverageTimes"></div>
+    </div>
+    <div style="width: 80%; margin: auto; padding-top: 20px;">
+      <canvas id="comparisonChart"></canvas>
+    </div>
+    </div>
+  </div>
+  <script src="schedulecomapison.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
