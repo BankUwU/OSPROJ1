@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Process Scheduling Simulator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #0b0b2d 0%, #1a1a4f 50%, #2d1a4f 100%);
+  color: #e0e0e0;
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* สร้างดาวด้วย pseudo-elements */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  box-shadow: 
+    /* ดาวขนาดเล็ก */
+    15vw 20vh 1px #fff,
+    35vw 45vh 1px #fff,
+    85vw 30vh 1px #fff,
+    50vw 75vh 1px #fff,
+    65vw 15vh 1px #fff,
+    75vw 85vh 1px #fff,
+    95vw 50vh 1px #fff,
+    20vw 90vh 1px #fff,
+    /* ดาวขนาดใหญ่กว่าเล็กน้อย */
+    45vw 25vh 2px #fff,
+    90vw 65vh 2px #fff,
+    10vw 55vh 2px #fff,
+    70vw 40vh 2px #fff;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+body::after {
+  /* สร้างชุดดาวอีกชุดด้วยตำแหน่งต่างกัน */
+  box-shadow: 
+    25vw 30vh 1px #fff,
+    55vw 15vh 1px #fff,
+    80vw 40vh 1px #fff,
+    40vw 60vh 1px #fff,
+    10vw 85vh 1px #fff,
+    30vw 70vh 1px #fff,
+    60vw 95vh 1px #fff,
+    95vw 25vh 1px #fff,
+    5vw 45vh 2px #fff,
+    75vw 55vh 2px #fff,
+    85vw 75vh 2px #fff,
+    15vw 35vh 2px #fff;
+  animation: twinkle 4s ease-in-out infinite 2s; /* เริ่มแอนิเมชันช้ากว่าชุดแรก */
+}
+
+/* แอนิเมชันกะพริบ */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* หมอกอวกาศ */
+.space-fog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 50%, 
+    rgba(76, 0, 255, 0.1),
+    rgba(76, 0, 255, 0) 70%);
+  pointer-events: none;
+}
+
+/* สไตล์ข้อความ */
+h1, h2, h3 {
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+a {
+  color: #00fff2;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #ff00ff;
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.6);
+}
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        text-align: center;
+        color: #e0e0e0;
+        margin-bottom: 30px;
+      }
+
+      .card {
+        background: #282838;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .table-container {
+        overflow-x: auto;
+        margin-bottom: 20px;
+      }
+
+      table {
+        width: 100%;
+        border: 1px solid #404050;
+        border-collapse: collapse;
+        border-spacing: 0;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #404050;
+      }
+
+      th {
+        background-color: #323242;
+        font-weight: bold;
+      }
+
+      input,
+      select {
+        background: #404050;
+        border: none;
+        padding: 8px;
+        border-radius: 4px;
+        color: #e0e0e0;
+        margin-right: 10px;
+      }
+
+      input {
+        width: 120px;
+      }
+
+      select {
+        width: 155px;
+      }
+
+      .btn-container {
+        display: flex;
+        gap: 30px;
+        margin: 20px 0;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        color: #e0e0e0;
+        font-weight: bold;
+        white-space: nowrap;
+      }
+
+      .btn-add {
+  background-color: #7F3DFF;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.btn-add {
+  background: linear-gradient(to right, #7F3DFF, #48B5FF);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  background: linear-gradient(to right, #6930d9, #3aa0e9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(127, 61, 255, 0.3);}
+
+  .btn-random {
+    background: linear-gradient(to right, #7F3DFF, #48B5FF);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  background: linear-gradient(to right, #6930d9, #3aa0e9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(127, 61, 255, 0.3);}
+      
+      .btn-delete {
+        background: linear-gradient(to right, #7F3DFF, #48B5FF);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  background: linear-gradient(to right, #6930d9, #3aa0e9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(127, 61, 255, 0.3);}
+      
+      .btn-run {
+        background:#039e4b;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  background: linear-gradient(to right, #6930d9, #3aa0e9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(127, 61, 255, 0.3);}
+      
+      .btn-reset {
+        background: linear-gradient(to right, #7F3DFF, #48B5FF);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  background: linear-gradient(to right, #6930d9, #3aa0e9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(127, 61, 255, 0.3);}
+      
+
+      .delete-container {
+        display: flex;
+        align-items: center;
+      }
+
+      .results {
+        margin-top: 30px;
+      }
+
+      .algorithm {
+        background: #323242;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+
+      .algorithm-header {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #e0e0e0;
+      }
+
+      .algorithm-container {
+        border: 1px solid #404050;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+
+      .gantt-chart {
+        margin: 10px 0;
+        display: flex;
+        overflow-x: auto;
+      }
+
+      .gantt-block {
+        padding: 10px;
+        text-align: center;
+        min-width: 50px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        margin-right: 2px;
+        font-weight: bold;
+      }
+
+      .gantt-block:last-child {
+        border-right: none;
+      }
+
+      .average-times {
+        margin-top: 10px;
+        font-weight: bold;
+      }
+
+      .popup {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      /* Styling for popup content box */
+      .popup-content {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        width: 320px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        position: relative;
+        animation: slideDown 0.3s ease-out;
+      }
+
+      /* Smooth animation for popup */
+      @keyframes slideDown {
+        from {
+          transform: translateY(-50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      /* Styling for close button */
+      .close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+        color: #888;
+        cursor: pointer;
+      }
+
+      .close:hover {
+        color: #444;
+      }
+
+      /* Header and label styling */
+      .popup-content h3 {
+        margin-bottom: 20px;
+        color: #333;
+        font-size: 20px;
+      }
+
+      .popup-content label {
+        display: block;
+        margin-top: 10px;
+        font-size: 14px;
+        color: #666;
+        text-align: left;
+      }
+
+      /* Styling for input fields */
+      .popup-content input[type="number"] {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 14px;
+      }
+
+      /* Save button styling */
+      .btn-save {
+        margin-top: 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .btn-save:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  
+  <body>
+    <div class="container">
+      
+    </div>
+      <h1>Process Scheduling Simulator</h1>
+
+      <div class="card">
+        <div class="table-container">
+          <div style="display: flex; align-items: center;">
+            <img src="/star_9796456.png" alt="icon" style="width: 35px; height: 35px; margin-left: 30px;margin-right: 20px; ">
+            <h2>Process information</h2>
+        </div>
+
+          <table id="processTable">
+            <thead>
+              <tr>
+                <th>Process ID</th>
+                <th>Arrival Time</th>
+                <th>Burst Time</th>
+                <th>Priority</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr>
+                <td>
+                  <input type="text" id="processId" placeholder="Process ID" />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    id="arrivalTime"
+                    placeholder="Arrival Time"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    id="burstTime"
+                    placeholder="Burst Time"
+                  />
+                </td>
+                <td>
+                  <input type="number" id="priority" placeholder="Priority" />
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="btn-container">
+          <button class="btn btn-add" onclick="addProcess()">Add Process</button>
+          <button class="btn btn-random" onclick="generateSingleProcess()">Random Process</button>
+          <div class="delete-container" >
+            <select id="processToDelete" style="border-radius: 100px; width: 240px; height: 40px; padding-left: 20px; background: linear-gradient(to right, #6930d9, #3aa0e9);background-color: rgb(38, 57, 85); "  >
+              <option value="">Select process to delete or edit</option>
+          </select>
+          
+            <button class="btn btn-delete" onclick="deleteProcess()">Delete Process</button>
+          </div>
+          <button class="btn btn-edit" onclick="editProcess()" style="background: linear-gradient(to right, #7F3DFF, #48B5FF);
+          color: rgb(255, 255, 255);
+          padding: 8px 16px;
+          border: none;
+          border-radius: 24px;
+          font-weight: 500;
+          cursor: pointer;
+          font-family: system-ui, -apple-system, sans-serif;
+          transition: all 0.3s ease;
+        
+        
+        .btn-add:hover {
+          background: linear-gradient(to right, #6930d9, #3aa0e9);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(127, 61, 255, 0.3);}">Edit Process</button>
+          <button class="btn btn-reset" onclick="reset()">Reset</button>
+          <button class="btn btn-run" onclick="runSimulation()">Run</button>
+        </div>
+
+        <div id="editPopup" class="popup" style="display: none;">
+          <div class="popup-content">
+            <span class="close" onclick="closeEditPopup()">&times;</span>
+            <h3>Edit Process</h3>
+            <label for="editArrivalTime">Arrival Time:</label>
+            <input type="number" id="editArrivalTime" placeholder="Arrival Time" />
+            <label for="editBurstTime">Burst Time:</label>
+            <input type="number" id="editBurstTime" placeholder="Burst Time" />
+            <label for="editPriority">Priority:</label>
+            <input type="number" id="editPriority" placeholder="Priority" />
+            <button class="btn btn-save" onclick="saveEditProcess()">Save Changes</button>
+          </div>
+        </div>
+
+      <div class="results">
+        <div style="display: flex; align-items: center; margin-bottom: 16px;">
+          <img src="/search_4240075.png" style="width: 30px; height: 30px; margin-right: 8px;">
+          <h2 style="display: inline; margin: 0;">Simulation Results</h2>
+      </div>
+
+        <!-- FCFS Algorithm Results -->
+        <div class="algorithm-container">
+          <div class="algorithm-header">FCFS (First Come First Serve)</div>
+          <div class="gantt-chart" id="fcfsGantt"></div>
+          <div class="table-container">
+            <table id="fcfsResultsTable">
+              <thead>
+                <tr>
+                  <th>Process ID</th>
+                  <th>Arrival Time</th>
+                  <th>Burst Time</th>
+                  <th>Priority</th>
+                  <th>Completion Time</th>
+                  <th>Waiting Time</th>
+                  <th>Turnaround Time</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="average-times" id="fcfsAverageTimes"></div>
+        </div>
+
+        <!-- RR Algorithm Results -->
+        <div class="algorithm-container">
+          <div class="algorithm-header">RR (Round Robin)</div>
+          <div class="gantt-chart" id="rrGantt"></div>
+          <div class="table-container">
+            <table id="rrResultsTable">
+              <thead>
+                <tr>
+                  <th>Process ID</th>
+                  <th>Arrival Time</th>
+                  <th>Burst Time</th>
+                  <th>Priority</th>
+                  <th>Completion Time</th>
+                  <th>Waiting Time</th>
+                  <th>Turnaround Time</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="average-times" id="rrAverageTimes"></div>
+        </div>
+
+        <!-- SJF Algorithm Results-->
+        <div class="algorithm-container">
+          <div class="algorithm-header">SJF (Shortest Job First)</div>
+          <div class="gantt-chart" id="sjfGantt"></div>
+          <div class="table-container">
+            <table id="sjfResultsTable">
+              <thead>
+                <tr>
+                  <th>Process ID</th>
+                  <th>Arrival Time</th>
+                  <th>Burst Time</th>
+                  <th>Priority</th>
+                  <th>Completion Time</th>
+                  <th>Waiting Time</th>
+                  <th>Turnaround Time</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="average-times" id="sjfAverageTimes"></div>
+        </div>
+      </div>
+
+      <!-- SRTF Algorithm Results -->
+      <div class="algorithm-container">
+        <div class="algorithm-header">SRTF (Shortest Remaining Time First)</div>
+        <div class="gantt-chart" id="srtfGantt"></div>
+        <div class="table-container">
+          <table id="srtfResultsTable">
+            <thead>
+              <tr>
+                <th>Process ID</th>
+                <th>Arrival Time</th>
+                <th>Burst Time</th>
+                <th>Priority</th>
+                <th>Completion Time</th>
+                <th>Waiting Time</th>
+                <th>Turnaround Time</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="average-times" id="srtfAverageTimes"></div>
+      </div>
+
+      <!-- Priority Scheduling Algorithm Results -->
+      <div class="algorithm-container">
+        <div class="algorithm-header">Priority Scheduling</div>
+        <div class="gantt-chart" id="priorityGantt"></div>
+        <div class="table-container">
+          <table id="priorityResultsTable">
+            <thead>
+              <tr>
+                <th>Process ID</th>
+                <th>Arrival Time</th>
+                <th>Burst Time</th>
+                <th>Priority</th>
+                <th>Completion Time</th>
+                <th>Waiting Time</th>
+                <th>Turnaround Time</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="average-times" id="priorityAverageTimes"></div>
+      </div>
+
+      <!-- HRRN Scheduling Algorithm Results -->
+      <div class="algorithm-container">
+        <div class="algorithm-header">HRRN (Highest Response Ratio Next)</div>
+        <div class="gantt-chart" id="hrrnGantt"></div>
+        <div class="table-container">
+          <table id="hrrnResultsTable">
+            <thead>
+              <tr>
+                <th>Process ID</th>
+                <th>Arrival Time</th>
+                <th>Burst Time</th>
+                <th>Priority</th>
+                <th>Completion Time</th>
+                <th>Waiting Time</th>
+                <th>Turnaround Time</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="average-times" id="hrrnAverageTimes"></div>
+      </div>
+
+      <!-- MLQF Scheduling Algorithm Results -->
+      <div class="algorithm-container">
+        <div class="algorithm-header">
+          MLQF (Multi-Level Queue with Feedback)
+        </div>
+        <div class="gantt-chart" id="mlqfGantt"></div>
+        <div class="table-container">
+          <table id="mlqfResultsTable">
+            <thead>
+              <tr>
+                <th>Process ID</th>
+                <th>Arrival Time</th>
+                <th>Burst Time</th>
+                <th>Priority</th>
+                <th>Completion Time</th>
+                <th>Waiting Time</th>
+                <th>Turnaround Time</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="average-times" id="mlqfAverageTimes"></div>
+      </div>
+      <div style="width: 80%; margin: auto; padding-top: 20px;">
+        <canvas id="comparisonChart"></canvas>
+    </div>
+    </div>
+    <script src="schedulecomapison.js"></script>
+    <script>
+      const processes = [];
+      const timeQuantum = 2;
+      let currentEditProcessId = null;
+
+      function editProcess() {
+        const processSelect = document.getElementById("processToDelete");
+        currentEditProcessId = processSelect.value;
+
+        if (currentEditProcessId) {
+          // Load current values (this would depend on how you store process data)
+          const processData = getProcessData(currentEditProcessId);
+          document.getElementById("editArrivalTime").value = processData.arrivalTime;
+          document.getElementById("editBurstTime").value = processData.burstTime;
+          document.getElementById("editPriority").value = processData.priority;
+
+          // Show the edit popup
+          document.getElementById("editPopup").style.display = "flex";
+        } else {
+          alert("Please select a process to edit.");
+        }
+      }
+
+      function closeEditPopup() {
+        document.getElementById("editPopup").style.display = "none";
+      }
+
+      function saveEditProcess() {
+  const newArrivalTime = parseInt(document.getElementById("editArrivalTime").value);
+  const newBurstTime = parseInt(document.getElementById("editBurstTime").value);
+  const newPriority = parseInt(document.getElementById("editPriority").value);
+
+  if (currentEditProcessId) {
+    // Validate input
+    if (isNaN(newArrivalTime) || newArrivalTime < 0 ||
+        isNaN(newBurstTime) || newBurstTime <= 0 ||
+        isNaN(newPriority) || newPriority <= 0) {
+      alert("Please enter valid values (arrival time ≥ 0, burst time > 0, priority > 0)");
+      return;
+    }
+
+    // Update process data in the processes array
+    updateProcessData(currentEditProcessId, newArrivalTime, newBurstTime, newPriority);
+    
+    // Update table row
+    updateTableRow(currentEditProcessId, newArrivalTime, newBurstTime, newPriority);
+    
+    alert(`Process ${currentEditProcessId} has been updated!`);
+    closeEditPopup();
+  }
+}
+
+      function getProcessData(processId) {
+  const process = processes.find(p => p.id === processId);
+  if (process) {
+    return {
+      arrivalTime: process.arrivalTime,
+      burstTime: process.burstTime,
+      priority: process.priority
+    };
+  }
+  return null;
+}
+
+function updateProcessData(processId, arrivalTime, burstTime, priority) {
+  const processIndex = processes.findIndex(p => p.id === processId);
+  if (processIndex !== -1) {
+    processes[processIndex] = {
+      ...processes[processIndex],
+      arrivalTime: parseInt(arrivalTime),
+      burstTime: parseInt(burstTime),
+      priority: parseInt(priority)
+    };
+  }
+}
+
+      function updateTableRow(processId, arrivalTime, burstTime, priority) {
+        const table = document.getElementById("processTable").getElementsByTagName("tbody")[0];
+        for (let row of table.rows) {
+          if (row.cells[0].textContent === processId) {
+            row.cells[1].textContent = arrivalTime;
+            row.cells[2].textContent = burstTime;
+            row.cells[3].textContent = priority;
+            break;
+          }
+        }
+      }
+
+    
+    
+      function updateDeleteSelect() {
+        const select = document.getElementById("processToDelete");
+        select.innerHTML =
+          '<option value="">Select process to delete</option>' +
+          processes
+            .map((p) => `<option value="${p.id}">${p.id}</option>`)
+            .join("");
+      }
+
+      function deleteProcess() {
+        const selectedId = document.getElementById("processToDelete").value;
+        if (selectedId) {
+          const index = processes.findIndex((p) => p.id === selectedId);
+          if (index !== -1) {
+            processes.splice(index, 1);
+            updateProcessTable();
+            updateDeleteSelect();
+          }
+        }
+      }
+
+      function addProcess() {
+        const processId = document.getElementById("processId").value;
+        const arrivalTime = parseInt(
+          document.getElementById("arrivalTime").value
+        );
+        const burstTime = parseInt(document.getElementById("burstTime").value);
+        const priority = parseInt(document.getElementById("priority").value);
+
+        if (
+          processId &&
+          !isNaN(arrivalTime) &&
+          arrivalTime >= 0 &&
+          !isNaN(burstTime) &&
+          burstTime > 0 &&
+          !isNaN(priority) &&
+          priority > 0
+        ) {
+          processes.push({
+            id: processId,
+            arrivalTime,
+            burstTime,
+            priority,
+            remainingTime: burstTime,
+          });
+          updateProcessTable();
+          updateDeleteSelect();
+          clearInputs();
+        } else {
+          alert("Please enter valid values (no negative values allowed).");
+        }
+      }
+
+      function clearInputs() {
+        document.getElementById("processId").value = "";
+        document.getElementById("arrivalTime").value = "";
+        document.getElementById("burstTime").value = "";
+        document.getElementById("priority").value = "";
+      }
+
+      function updateProcessTable() {
+        const tbody = document.querySelector("#processTable tbody");
+        tbody.innerHTML = processes
+          .map(
+            (p) => `
+          <tr>
+            <td>${p.id}</td>
+            <td>${p.arrivalTime}</td>
+            <td>${p.burstTime}</td>
+            <td>${p.priority}</td>
+          </tr>
+        `
+          )
+          .join("");
+      }
+
+      function generateSingleProcess() {
+        const processNumber = processes.length + 1;
+        processes.push({
+          id: `P${processNumber}`,
+          arrivalTime: Math.floor(Math.random() * 10),
+          burstTime: Math.floor(Math.random() * 10) + 1,
+          priority: Math.floor(Math.random() * 5) + 1,
+        });
+        updateProcessTable();
+        updateDeleteSelect();
+      }
+
+      function reset() {
+        processes.length = 0;
+        updateProcessTable();
+        updateDeleteSelect();
+        document.querySelector("#resultsTable tbody").innerHTML = "";
+        document.getElementById("averageTimes").innerHTML = "";
+      }
+
+      // Call runSimulation to test the function after ensuring processes are properly added
+      function runSimulation() {
+  if (processes.length === 0) {
+    alert("Please add processes before running the simulation.");
+    return;
+  }
+
+  // Create deep copies of processes for each algorithm
+  const processesForSimulation = processes.map(p => ({
+    id: p.id,
+    arrivalTime: p.arrivalTime,
+    burstTime: p.burstTime,
+    priority: p.priority,
+    remainingTime: p.burstTime
+  }));
+
+  const fcfsResults = FCFS([...processesForSimulation]);
+  const rrResults = RR([...processesForSimulation], timeQuantum);
+  const sjfResults = SJF([...processesForSimulation]);
+  const srtfResults = SRTF([...processesForSimulation]);
+  const priorityResults = PriorityScheduling([...processesForSimulation]);
+  const hrrnResults = HRRN([...processesForSimulation]);
+  const mlqfResults = MLQF([...processesForSimulation]);
+
+  displayResults(
+    fcfsResults,
+    rrResults,
+    sjfResults,
+    srtfResults,
+    priorityResults,
+    hrrnResults,
+    mlqfResults
+  );
+}
+
+      // FCFS Scheduling
+      function FCFS(processList) {
+        const processes = [...processList].sort(
+          (a, b) => a.arrivalTime - b.arrivalTime
+        );
+        const timeline = [];
+        let currentTime = 0;
+
+        processes.forEach((process) => {
+          // Skip idle time if needed
+          if (currentTime < process.arrivalTime) {
+            currentTime = process.arrivalTime;
+          }
+
+          // Add process execution to timeline
+          timeline.push({
+            processId: process.id,
+            startTime: currentTime,
+            duration: process.burstTime,
+            endTime: currentTime + process.burstTime,
+          });
+
+          currentTime += process.burstTime;
+
+          // Calculate times for this process
+          process.completionTime = currentTime;
+          process.turnaroundTime = process.completionTime - process.arrivalTime;
+          process.waitingTime = process.turnaroundTime - process.burstTime;
+        });
+
+        // Calculate averages
+        const avgWaitingTime =
+          processes.reduce((sum, p) => sum + p.waitingTime, 0) /
+          processes.length;
+        const avgTurnaroundTime =
+          processes.reduce((sum, p) => sum + p.turnaroundTime, 0) /
+          processes.length;
+
+        return {
+          results: processes,
+          timeline: timeline,
+          averages: {
+            waiting: avgWaitingTime,
+            turnaround: avgTurnaroundTime,
+          },
+        };
+      }
+
+      // RR Scheduling
+      function RR(processList, timeQuantum) {
+  const processes = processList.map(p => ({
+    ...p,
+    remainingTime: p.burstTime
+  }));
+  
+  const timeline = [];
+  const completed = [];
+  const readyQueue = [];
+  let currentTime = 0;
+
+  while (processes.some(p => p.remainingTime > 0)) {
+    // Add newly arrived processes to ready queue
+    processes.forEach(process => {
+      if (process.arrivalTime <= currentTime && 
+          process.remainingTime > 0 && 
+          !readyQueue.includes(process)) {
+        readyQueue.push(process);
+      }
+    });
+
+    if (readyQueue.length === 0) {
+      // Find next arrival time
+      const nextArrival = processes
+        .filter(p => p.remainingTime > 0 && p.arrivalTime > currentTime)
+        .reduce((min, p) => Math.min(min, p.arrivalTime), Infinity);
+      
+      if (nextArrival !== Infinity) {
+        currentTime = nextArrival;
+        continue;
+      }
+    }
+
+    if (readyQueue.length > 0) {
+      const currentProcess = readyQueue.shift();
+      const executionTime = Math.min(timeQuantum, currentProcess.remainingTime);
+
+      timeline.push({
+        processId: currentProcess.id,
+        startTime: currentTime,
+        duration: executionTime,
+        endTime: currentTime + executionTime
+      });
+
+      currentProcess.remainingTime -= executionTime;
+      currentTime += executionTime;
+
+      if (currentProcess.remainingTime > 0) {
+        readyQueue.push(currentProcess);
+      } else {
+        currentProcess.completionTime = currentTime;
+        completed.push(currentProcess);
+      }
+    } else {
+      currentTime++;
+    }
+  }
+
+  const results = completed.map(p => ({
+    ...p,
+    turnaroundTime: p.completionTime - p.arrivalTime,
+    waitingTime: p.completionTime - p.arrivalTime - p.burstTime
+  }));
+
+  return {
+    results,
+    timeline,
+    averages: {
+      waiting: results.reduce((sum, p) => sum + p.waitingTime, 0) / results.length,
+      turnaround: results.reduce((sum, p) => sum + p.turnaroundTime, 0) / results.length
+    }
+  };
+}
+      //SJF scheduling
+      function SJF(processList) {
+        const processes = [...processList].sort(
+          (a, b) => a.arrivalTime - b.arrivalTime || a.burstTime - b.burstTime
+        );
+        const timeline = [];
+        let currentTime = 0;
+        const completed = [];
+
+        while (processes.length > 0) {
+          // Filter processes that have arrived by the current time and not completed
+          const availableProcesses = processes.filter(
+            (p) => p.arrivalTime <= currentTime
+          );
+
+          if (availableProcesses.length > 0) {
+            // Choose the process with the shortest burst time
+            availableProcesses.sort((a, b) => a.burstTime - b.burstTime);
+            const currentProcess = availableProcesses[0];
+
+            // Remove the process from the array to mark it as completed
+            processes.splice(processes.indexOf(currentProcess), 1);
+
+            // Add to timeline and calculate times
+            timeline.push({
+              processId: currentProcess.id,
+              startTime: currentTime,
+              duration: currentProcess.burstTime,
+              endTime: currentTime + currentProcess.burstTime,
+            });
+
+            currentTime += currentProcess.burstTime;
+
+            currentProcess.completionTime = currentTime;
+            currentProcess.turnaroundTime =
+              currentProcess.completionTime - currentProcess.arrivalTime;
+            currentProcess.waitingTime =
+              currentProcess.turnaroundTime - currentProcess.burstTime;
+
+            completed.push(currentProcess);
+          } else {
+            // Advance time if no processes have arrived
+            currentTime++;
+          }
+        }
+
+        // Calculate averages
+        const avgWaitingTime =
+          completed.reduce((sum, p) => sum + p.waitingTime, 0) /
+          completed.length;
+        const avgTurnaroundTime =
+          completed.reduce((sum, p) => sum + p.turnaroundTime, 0) /
+          completed.length;
+
+        return {
+          results: completed,
+          timeline: timeline,
+          averages: {
+            waiting: avgWaitingTime,
+            turnaround: avgTurnaroundTime,
+          },
+        };
+      }
+
+      //SRTF scheduling
+      function SRTF(processList) {
+        const processes = processList.map((p) => ({
+          ...p,
+          remainingTime: p.burstTime,
+        }));
+        const timeline = [];
+        let currentTime = 0;
+        const completed = [];
+
+        while (completed.length < processList.length) {
+          const availableProcesses = processes.filter(
+            (p) => p.arrivalTime <= currentTime && p.remainingTime > 0
+          );
+
+          if (availableProcesses.length > 0) {
+            availableProcesses.sort(
+              (a, b) => a.remainingTime - b.remainingTime
+            );
+            const currentProcess = availableProcesses[0];
+
+            timeline.push({
+              processId: currentProcess.id,
+              startTime: currentTime,
+              duration: 1,
+              endTime: currentTime + 1,
+            });
+
+            currentProcess.remainingTime -= 1;
+            currentTime += 1;
+
+            if (currentProcess.remainingTime === 0) {
+              currentProcess.completionTime = currentTime;
+              currentProcess.turnaroundTime =
+                currentProcess.completionTime - currentProcess.arrivalTime;
+              currentProcess.waitingTime =
+                currentProcess.turnaroundTime - currentProcess.burstTime;
+              completed.push(currentProcess);
+            }
+          } else {
+            currentTime++;
+          }
+        }
+
+        const avgWaitingTime =
+          completed.reduce((sum, p) => sum + p.waitingTime, 0) /
+          completed.length;
+        const avgTurnaroundTime =
+          completed.reduce((sum, p) => sum + p.turnaroundTime, 0) /
+          completed.length;
+
+        return {
+          results: completed,
+          timeline: timeline,
+          averages: {
+            waiting: avgWaitingTime,
+            turnaround: avgTurnaroundTime,
+          },
+        };
+      }
+
+      //Priority scheduling
+      function PriorityScheduling(processList) {
+        // Sort by arrival time, then by priority (ascending for priority)
+        const processes = [...processList].sort(
+          (a, b) => a.arrivalTime - b.arrivalTime || a.priority - b.priority
+        );
+
+        let currentTime = 0;
+        const timeline = [];
+        const completedProcesses = [];
+
+        while (processes.length > 0) {
+          // Find the next available process with the highest priority (lowest priority value)
+          const availableProcesses = processes.filter(
+            (p) => p.arrivalTime <= currentTime
+          );
+
+          let currentProcess;
+          if (availableProcesses.length > 0) {
+            // Sort available processes by priority (ascending) and pick the one with the lowest priority
+            currentProcess = availableProcesses.sort(
+              (a, b) => a.priority - b.priority
+            )[0];
+          } else {
+            // No available processes, so move currentTime to the next process arrival
+            currentProcess = processes[0];
+            currentTime = currentProcess.arrivalTime;
+          }
+
+          // Remove the selected process from the list
+          processes.splice(processes.indexOf(currentProcess), 1);
+
+          // Record process execution in the timeline
+          timeline.push({
+            processId: currentProcess.id,
+            startTime: currentTime,
+            duration: currentProcess.burstTime,
+            endTime: currentTime + currentProcess.burstTime,
+          });
+
+          // Calculate timing metrics
+          currentProcess.completionTime =
+            currentTime + currentProcess.burstTime;
+          currentProcess.turnaroundTime =
+            currentProcess.completionTime - currentProcess.arrivalTime;
+          currentProcess.waitingTime =
+            currentProcess.turnaroundTime - currentProcess.burstTime;
+
+          // Update current time
+          currentTime += currentProcess.burstTime;
+
+          // Add the completed process to the list
+          completedProcesses.push(currentProcess);
+        }
+
+        // Calculate average waiting and turnaround times
+        const avgWaitingTime =
+          completedProcesses.reduce((sum, p) => sum + p.waitingTime, 0) /
+          completedProcesses.length;
+        const avgTurnaroundTime =
+          completedProcesses.reduce((sum, p) => sum + p.turnaroundTime, 0) /
+          completedProcesses.length;
+
+        return {
+          results: completedProcesses,
+          timeline: timeline,
+          averages: {
+            waiting: avgWaitingTime,
+            turnaround: avgTurnaroundTime,
+          },
+        };
+      }
+
+      function HRRN(processList) {
+        const processes = processList.map((p) => ({ ...p }));
+        let currentTime = 0;
+        const completedProcesses = [];
+        const timeline = [];
+
+        while (completedProcesses.length < processes.length) {
+          // Find processes that have arrived by the current time and are not completed
+          const availableProcesses = processes.filter(
+            (p) => p.arrivalTime <= currentTime && !p.completed
+          );
+
+          // If no process is available, increment the currentTime and continue
+          if (availableProcesses.length === 0) {
+            currentTime++;
+            continue;
+          }
+
+          // Calculate response ratio for each available process
+          availableProcesses.forEach((p) => {
+            p.responseRatio =
+              (currentTime - p.arrivalTime + p.burstTime) / p.burstTime;
+          });
+
+          // Sort by response ratio in descending order
+          availableProcesses.sort((a, b) => b.responseRatio - a.responseRatio);
+
+          const currentProcess = availableProcesses[0]; // Select the process with the highest response ratio
+
+          // Update timeline for Gantt chart
+          timeline.push({
+            processId: currentProcess.id,
+            startTime: currentTime,
+            duration: currentProcess.burstTime,
+            endTime: currentTime + currentProcess.burstTime,
+          });
+
+          // Update process completion and turnaround/waiting times
+          currentTime += currentProcess.burstTime;
+          currentProcess.completionTime = currentTime;
+          currentProcess.turnaroundTime =
+            currentProcess.completionTime - currentProcess.arrivalTime;
+          currentProcess.waitingTime =
+            currentProcess.turnaroundTime - currentProcess.burstTime;
+          currentProcess.completed = true;
+
+          completedProcesses.push(currentProcess);
+        }
+
+        // Calculate averages
+        const avgWaitingTime =
+          completedProcesses.reduce((sum, p) => sum + p.waitingTime, 0) /
+          completedProcesses.length;
+        const avgTurnaroundTime =
+          completedProcesses.reduce((sum, p) => sum + p.turnaroundTime, 0) /
+          completedProcesses.length;
+
+        return {
+          results: completedProcesses,
+          timeline: timeline,
+          averages: {
+            waiting: avgWaitingTime,
+            turnaround: avgTurnaroundTime,
+          },
+        };
+      }
+
+      //MLQF scheduling
+      function MLQF(processList) {
+  const timeQuantum = 2;
+  const timeline = [];
+  let currentTime = 0;
+  const completedProcesses = [];
+  const readyQueue1 = []; 
+  const readyQueue2 = [];
+
+  // Deep copy processes
+  const processes = processList.map(p => ({
+    ...p,
+    remainingTime: p.burstTime
+  }));
+
+  while (processes.some(p => p.remainingTime > 0)) {
+    // Find next process arrival if both queues empty
+    if (readyQueue1.length === 0 && readyQueue2.length === 0) {
+      const nextArrival = processes
+        .filter(p => p.remainingTime > 0 && p.arrivalTime > currentTime)
+        .reduce((min, p) => Math.min(min, p.arrivalTime), Infinity);
+      
+      if (nextArrival !== Infinity) {
+        currentTime = nextArrival;
+      }
+    }
+
+    // Move arrived processes to queues
+    processes.forEach(process => {
+      if (process.arrivalTime <= currentTime && 
+          process.remainingTime > 0 && 
+          !readyQueue1.includes(process) && 
+          !readyQueue2.includes(process)) {
+        if (process.priority <= 2) {
+          readyQueue1.push(process);
+        } else {
+          readyQueue2.push(process);
+        }
+      }
+    });
+
+    let selectedProcess = null;
+    let quantum = timeQuantum;
+
+    // Select process from appropriate queue
+    if (readyQueue1.length > 0) {
+      selectedProcess = readyQueue1.shift();
+      quantum = Math.min(timeQuantum, selectedProcess.remainingTime);
+    } else if (readyQueue2.length > 0) {
+      selectedProcess = readyQueue2.shift();
+      quantum = selectedProcess.remainingTime;
+    }
+
+    if (selectedProcess) {
+      timeline.push({
+        processId: selectedProcess.id,
+        startTime: currentTime,
+        duration: quantum,
+        endTime: currentTime + quantum
+      });
+
+      selectedProcess.remainingTime -= quantum;
+      currentTime += quantum;
+
+      if (selectedProcess.remainingTime > 0) {
+        if (selectedProcess.priority <= 2) {
+          readyQueue1.push(selectedProcess);
+        } else {
+          readyQueue2.push(selectedProcess);
+        }
+      } else {
+        selectedProcess.completionTime = currentTime;
+        completedProcesses.push(selectedProcess);
+      }
+    } else {
+      currentTime++;
+    }
+  }
+
+  // Calculate statistics
+  const results = completedProcesses.map(p => ({
+    ...p,
+    turnaroundTime: p.completionTime - p.arrivalTime,
+    waitingTime: p.completionTime - p.arrivalTime - p.burstTime
+  }));
+
+  return {
+    results,
+    timeline,
+    averages: {
+      waiting: results.reduce((sum, p) => sum + p.waitingTime, 0) / results.length,
+      turnaround: results.reduce((sum, p) => sum + p.turnaroundTime, 0) / results.length
+    }
+  };
+}
+
+      function displayResults(
+        fcfsResults,
+        rrResults,
+        sjfResults,
+        srtfResults,
+        priorityResults,
+        hrrnResults,
+        mlqfResults
+      ) {
+        function getRandomColor() {
+          const r = Math.floor(Math.random() * 128);
+          const g = Math.floor(Math.random() * 128);
+          const b = Math.floor(Math.random() * 128);
+          return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function createGanttChart(timeline, elementId) {
+          const container = document.getElementById(elementId);
+          container.innerHTML = timeline
+            .map(
+              (block) => `
+            <div class="gantt-block" style="background-color: ${getRandomColor(
+              block.processId
+            )};">
+              <div class="gantt-time">${block.duration}</div>
+              <div class="gantt-process">${block.processId}</div>
+            </div>
+          `
+            )
+            .join("");
+        }
+
+        function displayResultTable(results, tableId) {
+          const tbody = document.querySelector(`#${tableId} tbody`);
+          tbody.innerHTML = results.results
+            .map(
+              (r) => `
+            <tr>
+              <td>${r.id}</td>
+              <td>${r.arrivalTime}</td>
+              <td>${r.burstTime}</td>
+              <td>${r.priority}</td>
+              <td>${r.completionTime}</td>
+              <td>${r.waitingTime}</td>
+              <td>${r.turnaroundTime}</td>
+            </tr>
+          `
+            )
+            .join("");
+        }
+
+        function displayAverages(averages, elementId) {
+          document.getElementById(elementId).innerHTML = `
+            Average Waiting Time: ${averages.waiting.toFixed(2)}<br>
+            Average Turnaround Time: ${averages.turnaround.toFixed(2)}
+          `;
+        }
+
+        // Display FCFS results
+        createGanttChart(fcfsResults.timeline, "fcfsGantt");
+        displayResultTable(fcfsResults, "fcfsResultsTable");
+        displayAverages(fcfsResults.averages, "fcfsAverageTimes");
+
+        // Display RR results
+        createGanttChart(rrResults.timeline, "rrGantt");
+        displayResultTable(rrResults, "rrResultsTable");
+        displayAverages(rrResults.averages, "rrAverageTimes");
+
+        // Display SJF results
+        createGanttChart(sjfResults.timeline, "sjfGantt");
+        displayResultTable(sjfResults, "sjfResultsTable");
+        displayAverages(sjfResults.averages, "sjfAverageTimes");
+
+        // Display SRTF results
+        createGanttChart(srtfResults.timeline, "srtfGantt");
+        displayResultTable(srtfResults, "srtfResultsTable");
+        displayAverages(srtfResults.averages, "srtfAverageTimes");
+
+        // Display Priority results
+        createGanttChart(priorityResults.timeline, "priorityGantt");
+        displayResultTable(priorityResults, "priorityResultsTable");
+        displayAverages(priorityResults.averages, "priorityAverageTimes");
+
+        // Display HRRN results
+        createGanttChart(hrrnResults.timeline, "hrrnGantt");
+        displayResultTable(hrrnResults, "hrrnResultsTable");
+        displayAverages(hrrnResults.averages, "hrrnAverageTimes");
+
+        // Display MLQF results
+        createGanttChart(mlqfResults.timeline, "mlqfGantt");
+        displayResultTable(mlqfResults, "mlqfResultsTable");
+        displayAverages(mlqfResults.averages, "mlqfAverageTimes");
+      }
+    </script>
+  </body>
+</html>
