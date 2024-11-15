@@ -1,0 +1,451 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #0b0b2d 0%, #1a1a4f 50%, #2d1a4f 100%);
+  color: #e0e0e0;
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* สร้างดาวด้วย pseudo-elements */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  box-shadow:
+    /* ดาวขนาดเล็ก */
+    15vw 20vh 1px #fff,
+    35vw 45vh 1px #fff,
+    85vw 30vh 1px #fff,
+    50vw 75vh 1px #fff,
+    65vw 15vh 1px #fff,
+    75vw 85vh 1px #fff,
+    95vw 50vh 1px #fff,
+    20vw 90vh 1px #fff,
+    /* ดาวขนาดใหญ่กว่าเล็กน้อย */
+    45vw 25vh 2px #fff,
+    90vw 65vh 2px #fff,
+    10vw 55vh 2px #fff,
+    70vw 40vh 2px #fff;
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+body::after {
+  /* สร้างชุดดาวอีกชุดด้วยตำแหน่งต่างกัน */
+  box-shadow:
+    25vw 30vh 1px #fff,
+    55vw 15vh 1px #fff,
+    80vw 40vh 1px #fff,
+    40vw 60vh 1px #fff,
+    10vw 85vh 1px #fff,
+    30vw 70vh 1px #fff,
+    60vw 95vh 1px #fff,
+    95vw 25vh 1px #fff,
+    5vw 45vh 2px #fff,
+    75vw 55vh 2px #fff,
+    85vw 75vh 2px #fff,
+    15vw 35vh 2px #fff;
+  animation: twinkle 4s ease-in-out infinite 2s;
+  /* เริ่มแอนิเมชันช้ากว่าชุดแรก */
+}
+
+/* แอนิเมชันกะพริบ */
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* หมอกอวกาศ */
+.space-fog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 50%,
+      rgba(76, 0, 255, 0.1),
+      rgba(76, 0, 255, 0) 70%);
+  pointer-events: none;
+}
+
+a {
+  color: #00fff2;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #ff00ff;
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.6);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.head {
+  text-align: center;
+  color: #e0e0e0;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.underline {
+  width: 300px;
+  height: 3px;
+  background: linear-gradient(to right, #607ae1, #8BC34A);
+  margin: 10px auto; 
+  margin-bottom: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(66, 116, 191, 0.5);
+}
+
+.card {
+  background: rgba(128, 0, 128, 0.3);
+  border-radius: 40px;
+  padding: 30px;
+  margin-bottom: 20px;
+  border: 1px solid rgb(91, 133, 169);
+}
+
+.card-container {
+  border-radius: 30px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgb(91, 133, 169);
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border: 1px solid #4c4c9b;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th,
+td {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #324d6c;
+}
+
+th {
+  background-color: #324d6c;
+  font-weight: bold;
+}
+
+input{
+  color: #000000;
+  padding: 8px;
+  border-radius: 10px;
+  margin-right: 10px;
+  width: 120px;
+
+}
+
+select {
+  padding: 8px;
+  border-radius: 4px;
+  color: #ffffff;
+  margin-right: 10px;
+  width: 155px;
+}
+
+.btn-container {
+  display: flex;
+  gap: 30px;
+  margin: 20px 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #e0e0e0;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.btn-add {
+  background: linear-gradient(to right, #7F3DFF, #48B5FF);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  background: linear-gradient(to right, #6930d9, #3aa0e9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(127, 61, 255, 0.3);
+}
+
+.btn-random {
+  background: linear-gradient(to right, #7F3DFF, #48B5FF);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-random:hover {
+  background: linear-gradient(to right, #6930d9, #3aa0e9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(127, 61, 255, 0.3);
+}
+
+.btn-delete {
+  background: linear-gradient(to right, #7F3DFF, #48B5FF);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-delete:hover {
+  background: linear-gradient(to right, #6930d9, #3aa0e9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(127, 61, 255, 0.3);
+}
+
+.btn-edit {
+  background: linear-gradient(to right, #7F3DFF, #48B5FF);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  margin-left: -20px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-edit:hover {
+  background: linear-gradient(to right, #6930d9, #3aa0e9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(127, 61, 255, 0.3);
+}
+
+.btn-run {
+  background: linear-gradient(to right, #ff0000, #ff7c4c);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-run:hover {
+  background: linear-gradient(to right, #a11b1b, #e37e3c);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(115, 51, 28, 0.3);
+}
+
+.btn-reset {
+  background: linear-gradient(to right, #7F3DFF, #48B5FF);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-reset:hover {
+  background: linear-gradient(to right, #6930d9, #3aa0e9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(127, 61, 255, 0.3);
+}
+
+
+.delete-container {
+  display: flex;
+  align-items: center;
+}
+
+.algorithm {
+  background: #454586;
+  padding: 15px;
+  border-radius: 20px;
+  margin-bottom: 15px;
+}
+
+.algorithm-header {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #e0e0e0;
+}
+
+.algorithm-container {
+  border: 1px solid #3e3e7e;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.gantt-chart {
+  margin: 10px 0;
+  display: flex;
+  overflow-x: auto;
+}
+
+.gantt-block {
+  padding: 10px;
+  text-align: center;
+  min-width: 50px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  margin-right: 2px;
+  font-weight: bold;
+}
+
+.gantt-block:last-child {
+  border-right: none;
+}
+
+.average-times {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Styling for popup content box */
+.popup-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  width: 320px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: slideDown 0.3s ease-out;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Smooth animation for popup */
+@keyframes slideDown {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Styling for close button */
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  color: #888;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #444;
+}
+
+/* Header and label styling */
+.popup-content h3 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 20px;
+}
+
+.popup-content label {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #666;
+  text-align: left;
+}
+
+/* Styling for input fields */
+.popup-content input[type="number"] {
+  width: 300px;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+/* Save button styling */
+.btn-save {
+  margin-top: 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-save:hover {
+  background-color: #45a049;
+}
+
