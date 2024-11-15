@@ -18,6 +18,7 @@ Get it here: [https://bankuwu.github.io/OSPROJ1](https://bankuwu.github.io/OSPRO
 - Clean & simple user interface
 - Random & user input processes data
 - Run all algorithms simultaneously
+- Delete and Edit processes
 
 ## Built with
 
