@@ -1,5 +1,5 @@
 # Process Scheduling Solver
-> A web based tool to generate gantt chart and calculate TAT (turnaround time) and WAT (waiting time) based on various scheduling algorithms.
+> A web based tool to generate gantt chart and calculate TAT (turnaround time) and WAT (waiting time) and graph comprison of average time based on various scheduling algorithms.
 
 Get it here: [https://bankuwu.github.io/OSPROJ1](https://bankuwu.github.io/OSPROJ1/)
 
